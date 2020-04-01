@@ -16,6 +16,7 @@ def rating_package_create(context, data_dict):
     '''
     model = context.get('model')
     user = context.get('user')
+    userIp = None
 
     user = model.User.by_name(user)
 
@@ -25,6 +26,8 @@ def rating_package_create(context, data_dict):
             user = toolkit.request.environ.get('REMOTE_ADDR')
         else:
             user = toolkit.request.environ.get('HTTP_X_FORWARDED_FOR')
+            userIp = user.split(",")[0]
+            user = userIp
 
     package_ref = data_dict.get('package')
     rating = data_dict.get('rating')
