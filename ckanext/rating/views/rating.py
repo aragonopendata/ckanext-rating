@@ -6,13 +6,17 @@ from ckan.common import request, _
 from ckan.lib.base import h
 from ckan.views import dataset as dataset_view
 
+from flask import Blueprint
+
 c = p.toolkit.c
 flatten_to_string_key = logic.flatten_to_string_key
 NotAuthorized = logic.NotAuthorized
 abort = base.abort
 
+rating_bp = Blueprint('rating', __name__)
 
-def submit_package_rating(self, package, rating):
+@rating_bp.route('/rating/dataset/<package>/<rating>')
+def submit_package_rating(package, rating):
     context = {'model': model, 'user': c.user or c.author}
     data_dict = {'package': package, 'rating': rating}
     try:
@@ -23,7 +27,8 @@ def submit_package_rating(self, package, rating):
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
 
 
-def submit_showcase_rating(self, package, rating):
+@rating_bp.route('/rating/showcase/<package>/<rating>')
+def submit_showcase_rating(package, rating):
     context = {'model': model, 'user': c.user or c.author}
     data_dict = {'package': package, 'rating': rating}
     try:
@@ -34,7 +39,8 @@ def submit_showcase_rating(self, package, rating):
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
 
 
-def search(self):
+@rating_bp.route('/dataset')
+def search():
     cur_page = request.params.get('page')
     if cur_page is not None:
         c.current_page = h.get_page_number(request.params)
@@ -43,3 +49,6 @@ def search(self):
     c.pkg_type = 'dataset'
     result = dataset_view.search(package_type=c.pkg_type)
     return result
+
+
+

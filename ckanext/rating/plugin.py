@@ -1,20 +1,19 @@
+import logging
+
+import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-from ckan.common import c, g
 import sqlalchemy
-import ckan.model as model
-
-from ckanext.rating.logic import action
-from ckanext.rating import helpers
-import ckanext.rating.logic.auth as rating_auth
-from ckanext.rating.model import Rating
+from ckan.common import c, g
 from ckan.lib.plugins import DefaultTranslation
 from ckan.plugins.toolkit import get_action
-from .helpers import show_rating_in_type
-from flask import Blueprint
-from ckanext.rating.views import dataset as dataset_view
 
-import logging
+import ckanext.rating.logic.auth as rating_auth
+from ckanext.rating import helpers
+from ckanext.rating.logic import action
+from ckanext.rating.model import Rating
+from ckanext.rating.views.rating import rating_bp
+from .helpers import show_rating_in_type
 
 log = logging.getLogger(__name__)
 
@@ -27,24 +26,24 @@ def sort_by_rating(sort):
         page = 1
     offset = (page - 1) * limit
     c.count_pkg = model.Session.query(
-                sqlalchemy.func.count(model.Package.id)).\
-        filter(model.Package.type == 'dataset').\
+        sqlalchemy.func.count(model.Package.id)). \
+        filter(model.Package.type == 'dataset'). \
         filter(
-            model.Package.private == False # noqa E712
-        ).\
+        model.Package.private == False  # noqa E712
+    ). \
         filter(model.Package.state == 'active').scalar()
     query = model.Session.query(
-                model.Package.id, model.Package.title,
-                sqlalchemy.func.avg(
-                    sqlalchemy.func.coalesce(Rating.rating, 0)).
-                label('rating_avg')).\
-        outerjoin(Rating, Rating.package_id == model.Package.id).\
-        filter(model.Package.type == 'dataset').\
+        model.Package.id, model.Package.title,
+        sqlalchemy.func.avg(
+            sqlalchemy.func.coalesce(Rating.rating, 0)).
+        label('rating_avg')). \
+        outerjoin(Rating, Rating.package_id == model.Package.id). \
+        filter(model.Package.type == 'dataset'). \
         filter(
-            model.Package.private == False # noqa E712
-        ).\
-        filter(model.Package.state == 'active').\
-        group_by(model.Package.id).\
+        model.Package.private == False  # noqa E712
+    ). \
+        filter(model.Package.state == 'active'). \
+        group_by(model.Package.id). \
         distinct()
     if sort == 'rating desc':
         query = query.order_by(sqlalchemy.desc('rating_avg'))
@@ -77,7 +76,6 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('assets', 'rating')
-
 
     # IActions
 
@@ -127,19 +125,9 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
                 pkg['ratings_count'] = rating_dict.get('ratings_count', 0)
         return search_results
 
-
     # IBlueprint
     def get_blueprint(self):
-        blueprint = Blueprint('rating', self.__module__)
-        rules = [
-            ('/rating/dataset/:package/:rating', 'submit_package_rating', dataset_view.submit_package_rating),
-            ('/rating/showcase/:package/:rating', 'submit_showcase_rating', dataset_view.submit_showcase_rating),
-            ('/dataset', 'search', dataset_view.search)
-        ]
-        for rule in rules:
-            blueprint.add_url_rule(*rule)
-
-        return blueprint
+        return rating_bp
 
     # IClick
     def get_commands(self):
