@@ -10,7 +10,9 @@ import ckanext.rating.logic.auth as rating_auth
 from ckanext.rating.model import Rating
 from ckan.lib.plugins import DefaultTranslation
 from ckan.plugins.toolkit import get_action
-from helpers import show_rating_in_type
+from .helpers import show_rating_in_type
+from flask import Blueprint
+from ckanext.rating.views import dataset as dataset_view
 
 import logging
 
@@ -63,7 +65,9 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IPackageController, inherit=True)
-    plugins.implements(plugins.IRoutes, inherit=True)
+    # plugins.implements(plugins.IRoutes, inherit=True)
+    plugins.implements(plugins.IBlueprint, inherit=True)
+    plugins.implements(plugins.IClick)
     if toolkit.check_ckan_version(min_version='2.5.0'):
         plugins.implements(plugins.ITranslation, inherit=True)
 
@@ -72,9 +76,8 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('fanstatic', 'rating')
-        toolkit.add_resource('public/css/', 'rating_css')
-        toolkit.add_resource('public/js/', 'rating_js')
+        toolkit.add_resource('assets', 'rating')
+
 
     # IActions
 
@@ -124,22 +127,21 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
                 pkg['ratings_count'] = rating_dict.get('ratings_count', 0)
         return search_results
 
-    # IRoutes
 
-    def before_map(self, map):
-        map.connect('/rating/dataset/:package/:rating',
-                    controller='ckanext.rating.controller:RatingController',
-                    action='submit_package_rating')
+    # IBlueprint
+    def get_blueprint(self):
+        blueprint = Blueprint('rating', self.__module__)
+        rules = [
+            ('/rating/dataset/:package/:rating', 'submit_package_rating', dataset_view.submit_package_rating),
+            ('/rating/showcase/:package/:rating', 'submit_showcase_rating', dataset_view.submit_showcase_rating),
+            ('/dataset', 'search', dataset_view.search)
+        ]
+        for rule in rules:
+            blueprint.add_url_rule(*rule)
 
-        map.connect('/rating/showcase/:package/:rating',
-                    controller='ckanext.rating.controller:RatingController',
-                    action='submit_showcase_rating')
+        return blueprint
 
-        map.connect(
-            '/dataset',
-            controller='ckanext.rating.controller:RatingPackageController',
-            action='search',
-            highlight_actions='index search'
-        )
-
-        return map
+    # IClick
+    def get_commands(self):
+        from ckanext.rating import cli
+        return cli.get_commands()

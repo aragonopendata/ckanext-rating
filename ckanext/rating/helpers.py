@@ -1,6 +1,6 @@
 from ckanext.rating.model import Rating
 from ckan.plugins import toolkit
-from pylons import config
+from ckan.common import config
 
 c = toolkit.c
 

@@ -1,7 +1,6 @@
-from ckan.lib.cli import CkanCommand
 
 
-class RatingCommand(CkanCommand):
+class RatingCommand():
     '''
     Send notification emails of datasets which have a reminder date set
 
