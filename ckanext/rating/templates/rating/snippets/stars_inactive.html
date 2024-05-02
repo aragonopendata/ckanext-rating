@@ -19,7 +19,6 @@ stars  - The number of stars to be displayed.
 {% set half_star = 1 %}
 
 {% block main_star_rating %}
-  -{{ package }}-
   <span class="star-rating{% if stars == 0 %} no-stars{% endif %}">
     <span class="star-rating-stars">
       {%- for index in range(stars|int) -%}
