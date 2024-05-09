@@ -4,10 +4,13 @@ from ckan.common import _
 from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 
+from ckanext.rating.model import MIN_RATING, MAX_RATING, Rating
+from ckan.types import Context, DataDict, ErrorDict, Schema
+
 log = logging.getLogger(__name__)
 
 
-def rating_package_create(context, data_dict):
+def rating_package_create(context: Context, data_dict: DataDict) -> DataDict:
     '''Review a dataset (package).
     :param package: the name or id of the dataset to rate
     :type package: string
@@ -16,7 +19,7 @@ def rating_package_create(context, data_dict):
     '''
     model = context.get('model')
     user = context.get('user')
-    userIp = None
+    user_ip = None
 
     user = model.User.by_name(user)
 
@@ -26,10 +29,10 @@ def rating_package_create(context, data_dict):
             user = toolkit.request.environ.get('REMOTE_ADDR')
         else:
             user = toolkit.request.environ.get('HTTP_X_FORWARDED_FOR')
-            userIp = user.split(",")[0]
-            user = userIp
+            user_ip = user.split(",")[0]
+            user = user_ip
 
-    package_ref = data_dict.get('package')
+    package_ref = data_dict.get('package_id')
     rating = data_dict.get('rating')
     error = None
     if not package_ref:
@@ -44,22 +47,21 @@ def rating_package_create(context, data_dict):
             error = _('Rating must be an integer value.')
         else:
             package = model.Package.get(package_ref)
-            if rating < model.MIN_RATING or rating > model.MAX_RATING:
+            if rating < MIN_RATING or rating > MAX_RATING:
                 error = _('Rating must be between %i and %i.') \
-                    % (model.MIN_RATING, model.MAX_RATING)
+                        % (MIN_RATING, MAX_RATING)
             elif not package:
                 error = _('Not found') + ': %r' % package_ref
     if error:
         raise ValidationError(error)
 
-    from ckanext.rating.model import Rating
     Rating.create_package_rating(package.id, rating, user)
 
     return Rating.get_package_rating(package.id)
 
 
 @toolkit.side_effect_free
-def rating_package_get(context, data_dict):
+def rating_package_get(context: Context, data_dict: DataDict):
     '''
     Get the rating and count of ratings for a package.
 

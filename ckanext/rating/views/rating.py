@@ -22,7 +22,7 @@ def submit_package_rating(package, rating):
     try:
         p.toolkit.check_access('check_access_user', context, data_dict)
         p.toolkit.get_action('rating_package_create')(context, data_dict)
-        h.redirect_to(controller='package', action='read', id=package)
+        return h.redirect_to('dataset.read', id=package)
     except NotAuthorized:
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
 

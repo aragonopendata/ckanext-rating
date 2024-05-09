@@ -1,17 +1,18 @@
-import uuid
 import datetime
+import uuid
+from typing import Optional
 
-from sqlalchemy import Column
-from sqlalchemy import types
-from sqlalchemy.ext.declarative import declarative_base
-from ckan.lib import dictization
 import ckan.model as model
+from ckan.lib import dictization
+from sqlalchemy import types, Column
+from sqlalchemy.orm import declarative_base
 
 log = __import__('logging').getLogger(__name__)
 
-Base = declarative_base()
+Base = declarative_base(metadata=model.meta.metadata)
 
-__all__ = ['MIN_RATING', 'MAX_RATING']
+# __all__ = ['MIN_RATING', 'MAX_RATING']
+__all__ = ['MIN_RATING', 'MAX_RATING', 'Rating', 'init_tables']
 
 MIN_RATING = 1.0
 MAX_RATING = 5.0
@@ -22,7 +23,6 @@ def make_uuid():
 
 
 class Rating(Base):
-
     __tablename__ = 'review'
 
     id = Column(types.UnicodeText, primary_key=True, default=make_uuid)
@@ -39,12 +39,12 @@ class Rating(Base):
         return rating_dict
 
     @classmethod
-    def create_package_rating(cls, package_id, rating, ip_or_user):
+    def create_package_rating(cls, package_id: str, rating: int , ip_or_user: str) -> None:
 
         rating = round(rating, 2)
         existing_rating = cls.get_user_package_rating(ip_or_user, package_id)
 
-        if (existing_rating.first()):
+        if existing_rating.first():
             existing_rating.update({'rating': rating})
             model.repo.commit()
             log.info('Review updated for package')
@@ -68,10 +68,10 @@ class Rating(Base):
             log.info('Review added for package')
 
     @classmethod
-    def get_package_rating(cls, package_id):
+    def get_package_rating(cls, package_id: str) -> Optional[dict]:
         ratings = model.Session.query(cls) \
-                    .filter(cls.package_id == package_id) \
-                    .all()
+            .filter(cls.package_id == package_id) \
+            .all()
 
         average = sum(r.rating for r in ratings) / float(len(ratings)) if (
                 len(ratings) > 0) else 0
@@ -81,7 +81,7 @@ class Rating(Base):
         }
 
     @classmethod
-    def get_user_package_rating(cls, ip_or_user, package_id):
+    def get_user_package_rating(cls, ip_or_user: str, package_id: str):
 
         user_id = None
         from ckan.model import User
@@ -91,9 +91,9 @@ class Rating(Base):
             ip_or_user = None
 
         rating = model.Session.query(cls).filter(
-                    cls.package_id == package_id,
-                    cls.user_id == user_id,
-                    cls.rater_ip == ip_or_user)
+            cls.package_id == package_id,
+            cls.user_id == user_id,
+            cls.rater_ip == ip_or_user)
 
         return rating
 
