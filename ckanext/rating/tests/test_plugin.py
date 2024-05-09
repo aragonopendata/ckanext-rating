@@ -6,35 +6,23 @@ import pytest
 from ckan.plugins import toolkit as tk
 from sqlalchemy import inspect
 
-from ckanext.rating.model import Rating, init_tables
-from rating.tests.factories import RatingFactory
+from ckanext.rating.model import Rating
+from ckanext.rating.tests.factories import RatingFactory
 
 __ALL__ = ['TestBase']
 
 
-@pytest.fixture(autouse=True)
-def with_rating_table():
-    """Fixture to add the rating table to the database."""
-    init_tables(engine=model.meta.engine)
-    yield
+@pytest.mark.usefixtures('clean_db')
+def test_rating_table_exists(migrate_db_for):
+    """Test that the 'rating' table exists."""
+    migrate_db_for("rating")
+    assert inspect(model.meta.engine).has_table('rating') is True
 
 
 def test_rating_plugin_loaded():
     """Test that the rating plugin is loaded."""
     plugins = tk.config.get("ckan.plugins")
     assert "rating" in plugins
-
-
-@pytest.mark.usefixtures('clean_db')
-def test_rating_table_created(with_rating_table):
-    """Test that the 'review' table exists."""
-    assert 'rating' in tk.config.get('ckan.plugins'), 'Rating plugin not enabled'
-    # init_tables(engine=model.meta.engine)
-    engine = model.meta.engine
-    # Test that the database is initialized
-    assert inspect(engine).has_table('package') is True
-    # Then test that the table is created
-    assert inspect(engine).has_table('review') is True, "Table 'review' not created"
 
 
 @pytest.mark.usefixtures('clean_db')
