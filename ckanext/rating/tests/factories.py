@@ -15,7 +15,7 @@ class RatingFactory(CKANFactory):
     class Meta:
         # model is model.Rating from this plugin
         model = Rating
-        action = "rating_package_create"
+        action = "rating_create"
     # assert Session.query(ckan.model.Package).all() != []
     package_id = factory.LazyFunction(lambda: Session.query(ckan.model.Package).first().id)
 

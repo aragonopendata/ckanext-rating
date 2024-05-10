@@ -5,9 +5,8 @@ Revises:
 Create Date: 2024-05-09 10:04:00.217793
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '015077061c30'
@@ -25,7 +24,9 @@ def upgrade():
                     sa.Column('rater_ip', sa.String(), nullable=True),
                     sa.Column('created', sa.DateTime(), nullable=True),
                     sa.Column('updated', sa.DateTime(), nullable=True),
-                    sa.PrimaryKeyConstraint('id')
+                    sa.PrimaryKeyConstraint('id'),
+                    sa.UniqueConstraint('package_id', 'user_id', name='uq_package_id_user_id'),
+                    sa.UniqueConstraint('package_id', 'rater_ip', name='uq_package_id_rater_ip')
                     )
 
 

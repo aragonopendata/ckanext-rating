@@ -39,10 +39,10 @@ class Rating(Base):
         return rating_dict
 
     @classmethod
-    def create_package_rating(cls, package_id: str, rating: int , ip_or_user: str) -> None:
+    def create_rating(cls, package_id: str, rating: int , ip_or_user: str) -> None:
 
         rating = round(rating, 2)
-        existing_rating = cls.get_user_package_rating(ip_or_user, package_id)
+        existing_rating = cls.get_user_rating(ip_or_user, package_id)
 
         if existing_rating.first():
             existing_rating.update({'rating': rating})
@@ -68,7 +68,7 @@ class Rating(Base):
             log.info('Review added for package')
 
     @classmethod
-    def get_package_rating(cls, package_id: str) -> Optional[dict]:
+    def get_rating(cls, package_id: str) -> Optional[dict]:
         ratings = model.Session.query(cls) \
             .filter(cls.package_id == package_id) \
             .all()
@@ -81,7 +81,7 @@ class Rating(Base):
         }
 
     @classmethod
-    def get_user_package_rating(cls, ip_or_user: str, package_id: str):
+    def get_user_rating(cls, ip_or_user: str, package_id: str):
 
         user_id = None
         from ckan.model import User

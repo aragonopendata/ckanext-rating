@@ -10,7 +10,7 @@ from ckan.types import Context, DataDict, ErrorDict, Schema
 log = logging.getLogger(__name__)
 
 
-def rating_package_create(context: Context, data_dict: DataDict) -> DataDict:
+def create_rating(context: Context, data_dict: DataDict) -> DataDict:
     '''Review a dataset (package).
     :param package: the name or id of the dataset to rate
     :type package: string
@@ -55,13 +55,13 @@ def rating_package_create(context: Context, data_dict: DataDict) -> DataDict:
     if error:
         raise ValidationError(error)
 
-    Rating.create_package_rating(package.id, rating, user)
+    Rating.create_rating(package.id, rating, user)
 
-    return Rating.get_package_rating(package.id)
+    return Rating.get_rating(package.id)
 
 
 @toolkit.side_effect_free
-def rating_package_get(context: Context, data_dict: DataDict):
+def get_rating(context: Context, data_dict: DataDict):
     '''
     Get the rating and count of ratings for a package.
 
@@ -84,4 +84,4 @@ def rating_package_get(context: Context, data_dict: DataDict):
 
     from ckanext.rating.model import Rating
 
-    return Rating.get_package_rating(package_id)
+    return Rating.get_rating(package_id)
