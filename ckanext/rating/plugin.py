@@ -6,6 +6,7 @@ import ckan.plugins.toolkit as toolkit
 import sqlalchemy
 from ckan.common import c, g
 from ckan.lib.plugins import DefaultTranslation
+from ckan.plugins import IValidators
 from ckan.plugins.toolkit import get_action
 
 import ckanext.rating.logic.auth as rating_auth
@@ -14,6 +15,7 @@ from ckanext.rating.logic import action
 from ckanext.rating.model import Rating
 from ckanext.rating.views.rating import rating_bp
 from .helpers import show_rating_in_type
+from .logic import validators
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +65,7 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IAuthFunctions)
+    plugins.implements(IValidators)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint, inherit=True)
     plugins.implements(plugins.IClick)
@@ -99,6 +102,13 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
 
     def get_auth_functions(self):
         return rating_auth.get_rating_auth_dict()
+
+    # IValidators
+    def get_validators(self):
+        return {
+            'rtng_rating_in_range': validators.rating_in_range,
+            'rtng_is_integer': validators.is_integer,
+        }
 
     # IPackageController
 
