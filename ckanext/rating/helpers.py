@@ -2,7 +2,7 @@ from ckanext.rating.model import Rating
 from ckan.plugins import toolkit
 from ckan.common import config
 
-from rating.logic.action import _get_user_ip
+from ckanext.rating.logic.action import _get_user_ip
 
 c = toolkit.c
 

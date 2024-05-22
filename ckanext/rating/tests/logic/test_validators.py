@@ -2,7 +2,7 @@ import pytest
 from ckan.plugins.toolkit import Invalid
 
 from ckanext.rating.model import MIN_RATING, MAX_RATING
-from rating.logic.validators import rating_in_range
+from ckanext.rating.logic.validators import rating_in_range
 
 
 class TestRatingInRange:

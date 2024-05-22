@@ -8,7 +8,7 @@ from ckan.plugins import toolkit as tk
 from ckan.types import Context, DataDict
 
 from ckanext.rating.model import Rating
-from rating.logic.schema import get_rating_schema
+from ckanext.rating.logic.schema import get_rating_schema
 
 log = logging.getLogger(__name__)
 
