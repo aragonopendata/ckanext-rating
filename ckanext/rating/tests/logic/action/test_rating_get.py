@@ -28,7 +28,7 @@ def test_can_get_package_rating_with_valid_package(user, package):
 
 def test_cannot_get_package_rating_with_invalid_package(user):
     context = {'user': user['name']}
-    data_dict = {'package_id': 'invalid_package'}
+    data_dict = {'package': 'invalid_package'}
     get_rating = get_action('rtng_get_rating')
     with pytest.raises(ValidationError):
         get_rating(context, data_dict)

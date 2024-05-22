@@ -18,10 +18,10 @@ depends_on = None
 def upgrade():
     op.create_table('review',
                     sa.Column('id', sa.String(), nullable=False),
-                    sa.Column('package_id', sa.String(), nullable=True),
+                    sa.Column('package_id', sa.String(), nullable=False, index=True),
                     sa.Column('rating', sa.Float(), nullable=False),
-                    sa.Column('user_id', sa.String(), nullable=True),
-                    sa.Column('rater_ip', sa.String(), nullable=True),
+                    sa.Column('user_id', sa.String(), nullable=True, index=True),
+                    sa.Column('rater_ip', sa.String(), nullable=False, index=True),
                     sa.Column('created', sa.DateTime(), nullable=True),
                     sa.Column('updated', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('id'),

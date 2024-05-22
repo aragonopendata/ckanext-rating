@@ -2,15 +2,23 @@ from ckanext.rating.model import Rating
 from ckan.plugins import toolkit
 from ckan.common import config
 
+from rating.logic.action import _get_user_ip
+
 c = toolkit.c
 
 
 def get_user_rating(package_id):
-    if not c.userobj:
-        user = toolkit.request.environ.get('REMOTE_ADDR')
-    else:
-        user = c.userobj
-    user_rating = Rating.get_user_rating(user, package_id).first()
+    user = c.userobj
+    rater_ip = _get_user_ip()
+    # if not c.userobj:
+    #     user = toolkit.request.environ.get('REMOTE_ADDR')
+    # else:
+    #     user = c.userobj
+    user_rating = Rating.get_user_rating(
+        package_id=package_id,
+        user_id=user.id if user else None,
+        rater_ip=rater_ip
+    )
     return user_rating.rating if user_rating is not None else None
 
 

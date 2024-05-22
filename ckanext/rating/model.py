@@ -27,10 +27,10 @@ class Rating(Base, DebugMixin, ActiveRecordMixin):
     __tablename__ = 'review'
 
     id = Column(types.UnicodeText, primary_key=True, default=make_uuid)
-    package_id = Column(types.UnicodeText, nullable=True, index=True)
-    rating = Column(types.Float, nullable=False)
+    package_id = Column(types.UnicodeText, index=True)
+    rating = Column(types.Float)
     user_id = Column(types.UnicodeText, nullable=True, index=True)
-    rater_ip = Column(types.UnicodeText)  # Used for identification if user is not authenticated
+    rater_ip = Column(types.UnicodeText, index=True)  # Used for identification if user is not authenticated
     created = Column(types.DateTime, default=datetime.datetime.now)
     updated = Column(types.DateTime, default=datetime.datetime.now)
 

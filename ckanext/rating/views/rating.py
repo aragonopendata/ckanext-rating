@@ -2,13 +2,14 @@ import ckan.lib.base as base
 import ckan.logic as logic
 import ckan.model as model
 import ckan.plugins as p
+from ckan.plugins import toolkit as tk
 from ckan.common import request, _
 from ckan.lib.base import h
 from ckan.views import dataset as dataset_view
 
 from flask import Blueprint
 
-c = p.toolkit.c
+g = tk.g
 flatten_to_string_key = logic.flatten_to_string_key
 NotAuthorized = logic.NotAuthorized
 abort = base.abort
@@ -17,11 +18,10 @@ rating_bp = Blueprint('rating', __name__)
 
 @rating_bp.route('/rating/dataset/<package>/<rating>')
 def submit_package_rating(package, rating):
-    context = {'model': model, 'user': c.user or c.author}
+    context = {'model': model, 'user': g.user or g.author}
     data_dict = {'package': package, 'rating': rating}
     try:
-        p.toolkit.check_access('check_access_user', context, data_dict)
-        p.toolkit.get_action('rating_package_create')(context, data_dict)
+        tk.get_action('rtng_create_rating')(context, data_dict)
         return h.redirect_to('dataset.read', id=package)
     except NotAuthorized:
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
@@ -29,11 +29,11 @@ def submit_package_rating(package, rating):
 
 @rating_bp.route('/rating/showcase/<package>/<rating>')
 def submit_showcase_rating(package, rating):
-    context = {'model': model, 'user': c.user or c.author}
+    context = {'model': model, 'user': g.user or g.author}
     data_dict = {'package': package, 'rating': rating}
     try:
-        p.toolkit.check_access('check_access_user', context, data_dict)
-        p.toolkit.get_action('rating_package_create')(context, data_dict)
+        tk.check_access('rating_auth_user', context, data_dict)
+        tk.get_action('rtng_create_rating')(context, data_dict)
         h.redirect_to('sixodp_showcase.read', id=package)
     except NotAuthorized:
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
@@ -43,11 +43,11 @@ def submit_showcase_rating(package, rating):
 def search():
     cur_page = request.params.get('page')
     if cur_page is not None:
-        c.current_page = h.get_page_number(request.params)
+        g.current_page = h.get_page_number(request.params)
     else:
-        c.current_page = 1
-    c.pkg_type = 'dataset'
-    result = dataset_view.search(package_type=c.pkg_type)
+        g.current_page = 1
+    g.pkg_type = 'dataset'
+    result = dataset_view.search(package_type=g.pkg_type)
     return result
 
 

@@ -9,7 +9,7 @@ from ckan.lib.plugins import DefaultTranslation
 from ckan.plugins import IValidators
 from ckan.plugins.toolkit import get_action
 
-import ckanext.rating.logic.auth as rating_auth
+from ckanext.rating.logic import auth
 from ckanext.rating import helpers
 from ckanext.rating.logic import action
 from ckanext.rating.model import Rating
@@ -101,7 +101,9 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
     # IAuthFunctions
 
     def get_auth_functions(self):
-        return rating_auth.get_rating_auth_dict()
+        return {
+            'rating_auth_user': auth.rating_auth_user,
+        }
 
     # IValidators
     def get_validators(self):

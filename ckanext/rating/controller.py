@@ -18,7 +18,7 @@ class RatingController(p.toolkit.BaseController):
         context = {'model': model, 'user': c.user or c.author}
         data_dict = {'package': package, 'rating': rating}
         try:
-            p.toolkit.check_access('check_access_user', context, data_dict)
+            p.toolkit.check_access('rating_auth_user', context, data_dict)
             p.toolkit.get_action('rating_package_create')(context, data_dict)
             h.redirect_to(controller='package', action='read', id=package)
         except NotAuthorized:
@@ -28,7 +28,7 @@ class RatingController(p.toolkit.BaseController):
         context = {'model': model, 'user': c.user or c.author}
         data_dict = {'package': package, 'rating': rating}
         try:
-            p.toolkit.check_access('check_access_user', context, data_dict)
+            p.toolkit.check_access('rating_auth_user', context, data_dict)
             p.toolkit.get_action('rating_package_create')(context, data_dict)
             h.redirect_to('sixodp_showcase.read', id=package)
         except NotAuthorized:

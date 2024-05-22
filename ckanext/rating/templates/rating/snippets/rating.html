@@ -16,7 +16,7 @@ package  - The package for which the rating is displayed
         </div>
       {% endblock %}
         {% block user_rating %}
-          {% if h.check_access('check_access_user')  %}
+          {% if h.check_access('rating_auth_user')  %}
             <h2 class="heading">{{ _('Your rating') }}</h2>
             <div class="rating-container">
               {%- snippet "rating/snippets/stars.html", package=package -%}

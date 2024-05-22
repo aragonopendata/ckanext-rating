@@ -15,11 +15,11 @@ class RatingFactory(CKANFactory):
     class Meta:
         # model is model.Rating from this plugin
         model = Rating
-        action = "rating_create"
+        action = "rtng_create_rating"
     # assert Session.query(ckan.model.Package).all() != []
     package_id = factory.LazyFunction(lambda: Session.query(ckan.model.Package).first().id)
 
     rating = factory.LazyFunction(lambda: fake.random_int(min=1, max=5))
-    user_id = 1
+    user_id = "1234"
     rater_ip = factory.LazyFunction(lambda: fake.ipv4())
 
