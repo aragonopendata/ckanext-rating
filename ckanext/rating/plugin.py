@@ -114,24 +114,24 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
 
     # IPackageController
 
-    def before_index(self, data_dict):
+    def before_dataset_index(self, data_dict):
         rating_dict = action.get_rating(None, {'package_id': data_dict['id']})
         data_dict['rating'] = rating_dict.get('rating')
         return data_dict
 
-    def after_show(self, context, pkg_dict):
+    def after_dataset_show(self, context, pkg_dict):
 
         if show_rating_in_type(pkg_dict.get('type')):
-            rating_dict = get_action('rating_get')(context, {'package_id': pkg_dict.get('id')})
+            rating_dict = get_action('rtng_get_rating')(context, {'package_id': pkg_dict.get('id')})
             pkg_dict['rating'] = rating_dict.get('rating', 0)
             pkg_dict['ratings_count'] = rating_dict.get('ratings_count', 0)
         return pkg_dict
 
-    def after_search(self, search_results, search_params):
+    def after_dataset_search(self, search_results, search_params):
 
         for pkg in search_results['results']:
             if show_rating_in_type(pkg.get('type')):
-                rating_dict = get_action('rating_get')({}, {'package_id': pkg.get('id')})
+                rating_dict = get_action('rtng_get_rating')({}, {'package_id': pkg.get('id')})
                 pkg['rating'] = rating_dict.get('rating', 0)
                 pkg['ratings_count'] = rating_dict.get('ratings_count', 0)
         return search_results
