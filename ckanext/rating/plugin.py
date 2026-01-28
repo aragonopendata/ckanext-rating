@@ -1,6 +1,5 @@
 import logging
 
-import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.common import g
@@ -27,7 +26,6 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(IValidators)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint, inherit=True)
-    plugins.implements(plugins.IClick)
     if toolkit.check_ckan_version(min_version='2.5.0'):
         plugins.implements(plugins.ITranslation, inherit=True)
 
@@ -106,8 +104,3 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
     # IBlueprint
     def get_blueprint(self):
         return rating_bp
-
-    # IClick
-    def get_commands(self):
-        from ckanext.rating import cli
-        return cli.get_commands()
