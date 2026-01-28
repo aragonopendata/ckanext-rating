@@ -38,9 +38,9 @@ class RatingController(p.toolkit.BaseController):
 class RatingPackageController(PackageController):
 
     def search(self):
-        cur_page = request.params.get('page')
+        cur_page = request.args.get('page')
         if cur_page is not None:
-            c.current_page = h.get_page_number(request.params)
+            c.current_page = h.get_page_number(request.args)
         else:
             c.current_page = 1
         c.pkg_type = 'dataset'

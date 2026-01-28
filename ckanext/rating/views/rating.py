@@ -41,9 +41,9 @@ def submit_showcase_rating(package, rating):
 
 @rating_bp.route('/dataset')
 def search():
-    cur_page = request.params.get('page')
+    cur_page = request.args.get('page')
     if cur_page is not None:
-        g.current_page = h.get_page_number(request.params)
+        g.current_page = h.get_page_number(request.args)
     else:
         g.current_page = 1
     g.pkg_type = 'dataset'
