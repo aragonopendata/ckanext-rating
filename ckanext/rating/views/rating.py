@@ -34,7 +34,7 @@ def submit_showcase_rating(package, rating):
     try:
         tk.check_access('rating_auth_user', context, data_dict)
         tk.get_action('rtng_create_rating')(context, data_dict)
-        h.redirect_to('sixodp_showcase.read', id=package)
+        return h.redirect_to('sixodp_showcase.read', id=package)
     except NotAuthorized:
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
 
