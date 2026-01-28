@@ -149,6 +149,3 @@ class Rating(Base, DebugMixin, ActiveRecordMixin):
 
         return rating
 
-# def init_tables(engine):
-#     Base.metadata.create_all(engine)
-#     log.info('Rating database tables are set-up')

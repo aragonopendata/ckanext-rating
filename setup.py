@@ -82,9 +82,6 @@ setup(
     entry_points='''
         [ckan.plugins]
         rating=ckanext.rating.plugin:RatingPlugin
-
-        [paste.paster_command]
-        rating=ckanext.rating.commands:RatingCommand
     ''',
 
     message_extractors={
