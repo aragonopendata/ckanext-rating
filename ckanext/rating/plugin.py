@@ -3,8 +3,7 @@ import logging
 import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-import sqlalchemy
-from ckan.common import c, g
+from ckan.common import g
 from ckan.lib.plugins import DefaultTranslation
 from ckan.plugins import IValidators
 from ckan.plugins.toolkit import get_action
@@ -18,46 +17,6 @@ from .helpers import show_rating_in_type
 from .logic import validators
 
 log = logging.getLogger(__name__)
-
-
-def sort_by_rating(sort):
-    limit = g.datasets_per_page
-    if c.current_page:
-        page = c.current_page
-    else:
-        page = 1
-    offset = (page - 1) * limit
-    c.count_pkg = model.Session.query(
-        sqlalchemy.func.count(model.Package.id)). \
-        filter(model.Package.type == 'dataset'). \
-        filter(
-        model.Package.private == False  # noqa E712
-    ). \
-        filter(model.Package.state == 'active').scalar()
-    query = model.Session.query(
-        model.Package.id, model.Package.title,
-        sqlalchemy.func.avg(
-            sqlalchemy.func.coalesce(Rating.rating, 0)).
-        label('rating_avg')). \
-        outerjoin(Rating, Rating.package_id == model.Package.id). \
-        filter(model.Package.type == 'dataset'). \
-        filter(
-        model.Package.private == False  # noqa E712
-    ). \
-        filter(model.Package.state == 'active'). \
-        group_by(model.Package.id). \
-        distinct()
-    if sort == 'rating desc':
-        query = query.order_by(sqlalchemy.desc('rating_avg'))
-    else:
-        query = query.order_by(sqlalchemy.asc('rating_avg'))
-    res = query.offset(offset).limit(limit)
-    c.qr = q = [id[0] for id in res]
-    tmp = 'id:('
-    for id in q:
-        tmp += id + ' OR '
-    q = tmp[:-4] + ')'
-    return q
 
 
 class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):

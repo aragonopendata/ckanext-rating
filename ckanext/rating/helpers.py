@@ -4,16 +4,10 @@ from ckan.common import config
 
 from ckanext.rating.logic.action import _get_user_ip
 
-c = toolkit.c
-
 
 def get_user_rating(package_id):
-    user = c.userobj
+    user = toolkit.g.userobj
     rater_ip = _get_user_ip()
-    # if not c.userobj:
-    #     user = toolkit.request.environ.get('REMOTE_ADDR')
-    # else:
-    #     user = c.userobj
     user_rating = Rating.get_user_rating(
         package_id=package_id,
         user_id=user.id if user else None,

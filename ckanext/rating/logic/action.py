@@ -30,7 +30,6 @@ def create_rating(context: Context, data_dict: DataDict) -> DataDict:
     :type rating: int
     '''
     tk.check_access('rating_auth_user', context, data_dict)
-    # model = context.get('model')
     user = context.get('user')
     rating_schema = get_rating_schema()
 
@@ -44,48 +43,14 @@ def create_rating(context: Context, data_dict: DataDict) -> DataDict:
 
     user = User.get(user)
 
-    # if not user_ip and not user:
-    #     errors['_after'] = [_('Cannot determine user or ip. Please log in.')]
-
     if errors:
         raise ValidationError(errors)
 
-    # if not isinstance(user, User):
-    # TODO: Get user ip address
-    # if tk.request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-    #     user = tk.request.environ.get('REMOTE_ADDR')
-    # else:
-    #     user = tk.request.environ.get('HTTP_X_FORWARDED_FOR')
-    #     user_ip = user.split(",")[0]
-    #     user = user_ip
-
-    # package_ref = data_dict.get('package_id')
-    # rating = data_dict.get('rating')
-    # error = None
-    # if not package_ref:
-    #     error = _('You must supply a package id or name '
-    #               '(parameter "package").')
-    # elif not rating:
-    #     error = _('You must supply a rating (parameter "rating").')
-    # else:
-    #     try:
-    #         rating = float(rating)
-    #     except ValueError:
-    #         error = _('Rating must be an integer value.')
-    #     else:
-    #         package = Package.get(package_ref)
-    #         if rating < MIN_RATING or rating > MAX_RATING:
-    #             error = _('Rating must be between %i and %i.') \
-    #                     % (MIN_RATING, MAX_RATING)
-    #         elif not package:
-    #             error = _('Not found') + ': %r' % package_ref
-    # if error:
-    #     raise ValidationError(error)
-
     package_ref = validated_data.get('package')
-    package_id = None
-    if package := model.Package.get(package_ref):
-        package_id = package.id
+    package = model.Package.get(package_ref)
+    if not package:
+        raise ValidationError({'package': [_('Not found: %s') % package_ref]})
+    package_id = package.id
     rating = validated_data.get('rating')
     Rating.create(
         package_id=package_id,
