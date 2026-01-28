@@ -1,65 +1,104 @@
 import logging
 
+from ckan import model
 from ckan.common import _
 from ckan.logic import ValidationError
-from ckan.plugins import toolkit
+from ckan.model import User
+from ckan.plugins import toolkit as tk
+from ckan.types import Context, DataDict
+
+from ckanext.rating.model import Rating
+from ckanext.rating.logic.schema import get_rating_schema
 
 log = logging.getLogger(__name__)
 
 
-def rating_package_create(context, data_dict):
+def _get_user_ip() -> str:
+    if tk.request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+        user_ip = tk.request.environ.get('REMOTE_ADDR')
+    else:
+        user = tk.request.environ.get('HTTP_X_FORWARDED_FOR')
+        user_ip = user.split(",")[0]
+    return user_ip
+
+
+def create_rating(context: Context, data_dict: DataDict) -> DataDict:
     '''Review a dataset (package).
     :param package: the name or id of the dataset to rate
     :type package: string
     :param rating: the rating to give to the dataset, an integer between 1 and 5
     :type rating: int
     '''
-    model = context.get('model')
+    tk.check_access('rating_auth_user', context, data_dict)
+    # model = context.get('model')
     user = context.get('user')
-    userIp = None
+    rating_schema = get_rating_schema()
 
-    user = model.User.by_name(user)
+    validated_data, errors = tk.navl_validate(data_dict, rating_schema, context)
 
-    from ckan.model import User
-    if not isinstance(user, User):
-        if toolkit.request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-            user = toolkit.request.environ.get('REMOTE_ADDR')
-        else:
-            user = toolkit.request.environ.get('HTTP_X_FORWARDED_FOR')
-            userIp = user.split(",")[0]
-            user = userIp
+    user_ip = _get_user_ip()
 
-    package_ref = data_dict.get('package')
-    rating = data_dict.get('rating')
-    error = None
-    if not package_ref:
-        error = _('You must supply a package id or name '
-                  '(parameter "package").')
-    elif not rating:
-        error = _('You must supply a rating (parameter "rating").')
-    else:
-        try:
-            rating = float(rating)
-        except ValueError:
-            error = _('Rating must be an integer value.')
-        else:
-            package = model.Package.get(package_ref)
-            if rating < model.MIN_RATING or rating > model.MAX_RATING:
-                error = _('Rating must be between %i and %i.') \
-                    % (model.MIN_RATING, model.MAX_RATING)
-            elif not package:
-                error = _('Not found') + ': %r' % package_ref
-    if error:
-        raise ValidationError(error)
+    context['rater_ip'] = user_ip
+    if not user_ip:
+        errors['_after'] = [_('Cannot identify user.')]
 
-    from ckanext.rating.model import Rating
-    Rating.create_package_rating(package.id, rating, user)
+    user = User.get(user)
 
-    return Rating.get_package_rating(package.id)
+    # if not user_ip and not user:
+    #     errors['_after'] = [_('Cannot determine user or ip. Please log in.')]
+
+    if errors:
+        raise ValidationError(errors)
+
+    # if not isinstance(user, User):
+    # TODO: Get user ip address
+    # if tk.request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+    #     user = tk.request.environ.get('REMOTE_ADDR')
+    # else:
+    #     user = tk.request.environ.get('HTTP_X_FORWARDED_FOR')
+    #     user_ip = user.split(",")[0]
+    #     user = user_ip
+
+    # package_ref = data_dict.get('package_id')
+    # rating = data_dict.get('rating')
+    # error = None
+    # if not package_ref:
+    #     error = _('You must supply a package id or name '
+    #               '(parameter "package").')
+    # elif not rating:
+    #     error = _('You must supply a rating (parameter "rating").')
+    # else:
+    #     try:
+    #         rating = float(rating)
+    #     except ValueError:
+    #         error = _('Rating must be an integer value.')
+    #     else:
+    #         package = Package.get(package_ref)
+    #         if rating < MIN_RATING or rating > MAX_RATING:
+    #             error = _('Rating must be between %i and %i.') \
+    #                     % (MIN_RATING, MAX_RATING)
+    #         elif not package:
+    #             error = _('Not found') + ': %r' % package_ref
+    # if error:
+    #     raise ValidationError(error)
+
+    package_ref = validated_data.get('package')
+    package_id = None
+    if package := model.Package.get(package_ref):
+        package_id = package.id
+    rating = validated_data.get('rating')
+    Rating.create(
+        package_id=package_id,
+        rating=rating,
+        rater_ip=user_ip,
+        user_id=user.id if user else None
+    )
+
+    return Rating.get_rating(package_id)
 
 
-@toolkit.side_effect_free
-def rating_package_get(context, data_dict):
+@tk.side_effect_free
+def get_rating(context: Context, data_dict: DataDict):
     '''
     Get the rating and count of ratings for a package.
 
@@ -82,4 +121,4 @@ def rating_package_get(context, data_dict):
 
     from ckanext.rating.model import Rating
 
-    return Rating.get_package_rating(package_id)
+    return Rating.get_rating(package_id)

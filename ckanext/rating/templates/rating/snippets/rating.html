@@ -6,7 +6,7 @@ package  - The package for which the rating is displayed
     {% snippet "rating/snippets/rating.html", package=pkg %}
 #}
 
-{% resource "rating_css/rating.css" %}
+{% asset "rating/rating-css" %}
 {% if h.show_rating_in_type(package.type) %}
     <div class="rating">
       {% block general_rating %}
@@ -16,7 +16,7 @@ package  - The package for which the rating is displayed
         </div>
       {% endblock %}
         {% block user_rating %}
-          {% if h.check_access('check_access_user')  %}
+          {% if h.check_access('rating_auth_user')  %}
             <h2 class="heading">{{ _('Your rating') }}</h2>
             <div class="rating-container">
               {%- snippet "rating/snippets/stars.html", package=package -%}
