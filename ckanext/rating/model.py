@@ -97,6 +97,40 @@ class Rating(Base, DebugMixin, ActiveRecordMixin):
         }
 
     @classmethod
+    def get_ratings_for_packages(cls, package_ids: list) -> dict:
+        """Get ratings for multiple packages in a single query.
+
+        Returns a dict mapping package_id to {'rating': float, 'ratings_count': int}
+        """
+        from sqlalchemy import func
+
+        if not package_ids:
+            return {}
+
+        results = model.Session.query(
+            cls.package_id,
+            func.avg(cls.rating).label('avg_rating'),
+            func.count(cls.id).label('count')
+        ).filter(
+            cls.package_id.in_(package_ids)
+        ).group_by(cls.package_id).all()
+
+        ratings_map = {
+            row.package_id: {
+                'rating': round(float(row.avg_rating), 2),
+                'ratings_count': row.count
+            }
+            for row in results
+        }
+
+        # Fill in packages with no ratings
+        for package_id in package_ids:
+            if package_id not in ratings_map:
+                ratings_map[package_id] = {'rating': 0, 'ratings_count': 0}
+
+        return ratings_map
+
+    @classmethod
     def _exists_user(cls, user_id: str) -> bool:
         return model.Session.query(User).filter(User.id == user_id).first() is not None
 

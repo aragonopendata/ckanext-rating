@@ -128,12 +128,20 @@ class RatingPlugin(plugins.SingletonPlugin, DefaultTranslation):
         return pkg_dict
 
     def after_dataset_search(self, search_results, search_params):
+        # Collect package IDs that need ratings
+        package_ids = [
+            pkg.get('id') for pkg in search_results['results']
+            if show_rating_in_type(pkg.get('type'))
+        ]
 
-        for pkg in search_results['results']:
-            if show_rating_in_type(pkg.get('type')):
-                rating_dict = get_action('rtng_get_rating')({}, {'package_id': pkg.get('id')})
-                pkg['rating'] = rating_dict.get('rating', 0)
-                pkg['ratings_count'] = rating_dict.get('ratings_count', 0)
+        # Batch fetch all ratings in one query
+        if package_ids:
+            ratings_map = Rating.get_ratings_for_packages(package_ids)
+            for pkg in search_results['results']:
+                if pkg.get('id') in ratings_map:
+                    pkg['rating'] = ratings_map[pkg['id']].get('rating', 0)
+                    pkg['ratings_count'] = ratings_map[pkg['id']].get('ratings_count', 0)
+
         return search_results
 
     # IBlueprint
