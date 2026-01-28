@@ -5,7 +5,7 @@
 {% set truncate_title = truncate_title or 80 %}
 {% block heading_title %}
 
-    {{ h.link_to((title | truncate(80)), h.url_for('dataset_read', id=package.name)) }}
+    {{ h.link_to((title | truncate(80)), h.url_for('dataset.read', id=package.name)) }}
     {% set rating = h.package_rating(None, {'package_id' : package.id} ).rating|float %}
     {% if rating != 0 %}
         <div class="dataset-rating">
