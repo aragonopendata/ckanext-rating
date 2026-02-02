@@ -46,11 +46,7 @@ def create_rating(context: Context, data_dict: DataDict) -> DataDict:
     if errors:
         raise ValidationError(errors)
 
-    package_ref = validated_data.get('package')
-    package = model.Package.get(package_ref)
-    if not package:
-        raise ValidationError({'package': [_('Not found: %s') % package_ref]})
-    package_id = package.id
+    package_id = validated_data.get('package')
     rating = validated_data.get('rating')
     Rating.create(
         package_id=package_id,

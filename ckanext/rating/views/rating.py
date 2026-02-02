@@ -12,6 +12,7 @@ from flask import Blueprint
 g = tk.g
 flatten_to_string_key = logic.flatten_to_string_key
 NotAuthorized = logic.NotAuthorized
+ValidationError = logic.ValidationError
 abort = base.abort
 
 rating_bp = Blueprint('rating', __name__)
@@ -25,6 +26,8 @@ def submit_package_rating(package, rating):
         return h.redirect_to('dataset.read', id=package)
     except NotAuthorized:
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
+    except ValidationError:
+        abort(404, _('Dataset not found'))
 
 
 @rating_bp.route('/rating/showcase/<package>/<rating>')
@@ -37,6 +40,8 @@ def submit_showcase_rating(package, rating):
         return h.redirect_to('sixodp_showcase.read', id=package)
     except NotAuthorized:
         abort(403, _('Unauthenticated user not allowed to submit ratings.'))
+    except ValidationError:
+        abort(404, _('Dataset not found'))
 
 
 @rating_bp.route('/dataset')
